@@ -47,27 +47,23 @@ def authentification():
     return render_template('formulaire_authentification.html', error=False)
 
 
-@app.route('/fiche_nom/', methods=['GET', 'POST'])
-def fiche_nom():
-    if not est_authentifie():
-        return redirect(url_for('authentification'))
-
-    clients = []
-    error = False
+@app.route('/authentification', methods=['GET', 'POST'])
+def authentification():
     if request.method == 'POST':
-        nom = request.form['nom']  # récupère le nom du client depuis le formulaire
+        # Récupérer les informations de connexion
+        username = request.form['username']
+        password = request.form['password']
+        
+        # Vérification des identifiants
+        if username in utilisateurs and utilisateurs[username] == password:
+            session['utilisateur'] = True  # Mettre un flag dans la session pour l'utilisateur
+            return redirect(url_for('fiche_nom'))  # Rediriger vers la page de recherche
 
-        # Recherche dans la base de données
-        conn = sqlite3.connect('database.db')
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM clients WHERE nom LIKE ?', ('%' + nom + '%',))
-        clients = cursor.fetchall()
-        conn.close()
+        # Si les identifiants sont incorrects
+        return render_template('formulaire_authentification.html', error=True)
 
-        if not clients:
-            error = True  # Si aucun client n'est trouvé
+    return render_template('formulaire_authentification.html', error=False)
 
-    return render_template('fiche_nom.html', clients=clients, error=error)
 
 @app.route('/consultation/')
 def ReadBDD():
