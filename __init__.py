@@ -56,7 +56,7 @@ def Readfiche(post_id):
     data = cursor.fetchall()
     conn.close()
     # Rendre le template HTML et transmettre les données
-    return render_template('read_data.html', data=data)
+    return render_template('fiche_nom.html', data=data)
 
 @app.route('/consultation/')
 def ReadBDD():
