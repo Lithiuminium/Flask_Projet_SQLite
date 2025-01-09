@@ -8,6 +8,10 @@ import sqlite3
 app = Flask(__name__)                                                                                                                  
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'  # Clé secrète pour les sessions
 
+utilisateurs = {
+    "user": "12345"
+}
+
 # Fonction pour créer une clé "authentifie" dans la session utilisateur
 def est_authentifie():
     return session.get('authentifie')
@@ -24,11 +28,6 @@ def lecture():
 
   # Si l'utilisateur est authentifié
     return "<h2>Bravo, vous êtes authentifié</h2>"
-
-# Dictionnaire d'utilisateurs (login et mot de passe)
-utilisateurs = {
-    "user": "12345"
-}
 
 @app.route('/authentification', methods=['GET', 'POST'])
 def authentification():
