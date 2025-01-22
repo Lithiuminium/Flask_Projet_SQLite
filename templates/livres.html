@@ -50,14 +50,14 @@
                 {% endif %}
 
                 <!-- Si l'utilisateur est authentifié, il peut emprunter le livre -->
-                {% if est_authentifie() and livre[4] > 0 %}
-                    {% if role == 'Admin' or role == 'User' %}
+                {% if est_authentifie() %}
+                    {% if livre[4] > 0 %}
                         <form method="POST" action="/emprunter/{{ livre[0] }}">
                             <button type="submit">Emprunter</button>
                         </form>
+                    {% else %}
+                        <span>Indisponible</span>
                     {% endif %}
-                {% elif livre[4] == 0 %}
-                    <span>Indisponible</span>
                 {% endif %}
             </td>
         </tr>
