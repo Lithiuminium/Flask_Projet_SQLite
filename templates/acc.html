@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Livres</title>
+</head>
+<body>
+    <h1>Liste des Livres</h1>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Titre</th>
+            <th>Auteur</th>
+            <th>Année</th>
+            <th>Quantité</th>
+        </tr>
+        {% for livre in livres %}
+        <tr>
+            <td>{{ livre[0] }}</td>
+            <td>{{ livre[1] }}</td>
+            <td>{{ livre[2] }}</td>
+            <td>{{ livre[3] }}</td>
+            <td>{{ livre[4] }}</td>
+            <td>
+                {% if livre[4] > 0 %}
+                <form action="{{ url_for('emprunter_livre', id_livre=livre[0]) }}" method="post">
+                    <button type="submit">Emprunter</button>
+                </form>
+                {% else %}
+                <p>Indisponible</p>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
