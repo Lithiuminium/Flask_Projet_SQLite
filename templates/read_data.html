@@ -1,28 +1,27 @@
-<!DOCTYPE>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Clients</title>
+    <title>Liste des clients</title>
 </head>
 <body>
-    <h1>Liste des Clients</h1>
-    <table>
+    <h1>Liste des clients</h1>
+    <table border="1">
         <tr>
             <th>ID</th>
-            <th>Création</th>
             <th>Nom</th>
             <th>Prénom</th>
             <th>Adresse</th>
         </tr>
-        {% for row in data %}
+        {% for client in clients %}
         <tr>
-            <td>{{ row[0] }}</td>
-            <td>{{ row[1] }}</td>
-            <td>{{ row[2] }}</td>
-            <td>{{ row[3] }}</td>
-            <td>{{ row[4] }}</td>
+            <td>{{ client[0] }}</td>
+            <td>{{ client[1] }}</td>
+            <td>{{ client[2] }}</td>
+            <td>{{ client[3] }}</td>
         </tr>
         {% endfor %}
     </table>
+    <a href="/">Retour à l'accueil</a>
 </body>
 </html>
