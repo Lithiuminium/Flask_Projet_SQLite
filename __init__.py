@@ -46,11 +46,11 @@ def authentification():
     return render_template('formulaire_authentification.html', error=False)
 
 
-# Route pour la déconnexion
 @app.route('/logout')
 def logout():
-    session.clear()
-    return redirect(url_for('authentification'))
+    session.clear()  # Effacer la session de l'utilisateur
+    return redirect(url_for('authentification'))  # Rediriger vers la page de connexion
+
 
 # Route pour consulter les clients (Admin seulement)
 @app.route('/clients')
