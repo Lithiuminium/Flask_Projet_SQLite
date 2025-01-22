@@ -27,11 +27,9 @@ def home():
 @app.route('/authentification', methods=['GET', 'POST'])
 def authentification():
     if request.method == 'POST':
-        # Récupérer les informations de connexion
         username = request.form['username']
         password = request.form['password']
         
-        # Vérification des identifiants
         if username in utilisateurs and utilisateurs[username]["password"] == password:
             session['authentifie'] = True
             session['role'] = utilisateurs[username]["role"]
@@ -74,7 +72,6 @@ def gerer_livres():
         if not est_admin():
             return "<h2>Accès refusé : vous devez être administrateur pour ajouter des livres.</h2>", 403
 
-        # Ajouter un nouveau livre
         titre = request.form['titre']
         auteur = request.form['auteur']
         annee = request.form['annee']
@@ -86,7 +83,6 @@ def gerer_livres():
         )
         conn.commit()
 
-    # Récupérer tous les livres
     cursor.execute('SELECT * FROM Livres')
     livres = cursor.fetchall()
     conn.close()
@@ -102,14 +98,12 @@ def emprunter_livre(id_livre):
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
 
-    # Vérifier la disponibilité du livre
     cursor.execute('SELECT Quantite FROM Livres WHERE ID_livre = ?', (id_livre,))
     livre = cursor.fetchone()
     if livre and livre[0] > 0:
-        # Réduire la quantité et enregistrer l'emprunt
         cursor.execute('UPDATE Livres SET Quantite = Quantite - 1 WHERE ID_livre = ?', (id_livre,))
         cursor.execute(
-            'INSERT INTO Emprunts (ID_utilisateur, ID_livre) VALUES (?, ?)',
+            'INSERT INTO Emprunts (ID_utilisateur, ID_livre, Date_emprunt) VALUES (?, ?, DATE("now"))',
             (session['utilisateur_id'], id_livre)
         )
         conn.commit()
@@ -126,7 +120,6 @@ def retourner_livre(id_emprunt):
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
 
-    # Marquer l'emprunt comme terminé
     cursor.execute('SELECT ID_livre FROM Emprunts WHERE ID_emprunt = ?', (id_emprunt,))
     emprunt = cursor.fetchone()
     if emprunt:
@@ -137,7 +130,7 @@ def retourner_livre(id_emprunt):
     conn.close()
     return redirect(url_for('gerer_livres'))
 
-# Route pour afficher les emprunts de l'utilisateur
+# Route pour afficher les emprunts d'un utilisateur
 @app.route('/mes_emprunts')
 def mes_emprunts():
     if not est_authentifie():
@@ -145,11 +138,34 @@ def mes_emprunts():
 
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM Emprunts WHERE ID_utilisateur = ?', (session['utilisateur_id'],))
+    cursor.execute('''
+        SELECT E.ID_emprunt, L.Titre, L.Auteur, E.Date_emprunt, E.Date_retour, E.Statut
+        FROM Emprunts E
+        JOIN Livres L ON E.ID_livre = L.ID_livre
+        WHERE E.ID_utilisateur = ?
+    ''', (session['utilisateur_id'],))
     emprunts = cursor.fetchall()
     conn.close()
 
     return render_template('mes_emprunts.html', emprunts=emprunts)
+
+# Route pour afficher tous les emprunts (Admin seulement)
+@app.route('/emprunts', methods=['GET'])
+def voir_emprunts():
+    if not est_authentifie() or not est_admin():
+        return "<h2>Accès refusé : vous devez être administrateur pour voir les emprunts.</h2>", 403
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT E.ID_emprunt, E.ID_utilisateur, L.Titre, L.Auteur, E.Date_emprunt, E.Date_retour, E.Statut
+        FROM Emprunts E
+        JOIN Livres L ON E.ID_livre = L.ID_livre
+    ''')
+    emprunts = cursor.fetchall()
+    conn.close()
+
+    return render_template('emprunts.html', emprunts=emprunts)
 
 if __name__ == "__main__":
     app.run(debug=True)
