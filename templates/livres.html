@@ -2,35 +2,38 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Gestion des Livres</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gérer les livres</title>
 </head>
 <body>
-    <h1>Liste des livres</h1>
+    <h1>Gestion des Livres</h1>
 
-    <!-- Formulaire pour ajouter un livre (uniquement pour les admins) -->
-    {% if role == 'Admin' %}
-        <h2>Ajouter un livre</h2>
-        <form method="POST" action="/livres">
-            <label for="titre">Titre</label>
-            <input type="text" name="titre" id="titre" required><br>
-            <label for="auteur">Auteur</label>
-            <input type="text" name="auteur" id="auteur" required><br>
-            <label for="annee">Année</label>
-            <input type="number" name="annee" id="annee" required><br>
-            <label for="quantite">Quantité</label>
-            <input type="number" name="quantite" id="quantite" required><br>
-            <button type="submit">Ajouter le livre</button>
-        </form>
-        <hr>
-    {% endif %}
+    <!-- Formulaire pour ajouter un livre -->
+    <h2>Ajouter un livre</h2>
+    <form action="{{ url_for('ajouter_livre') }}" method="post">
+        <label for="titre">Titre :</label>
+        <input type="text" id="titre" name="titre" required><br>
 
+        <label for="auteur">Auteur :</label>
+        <input type="text" id="auteur" name="auteur" required><br>
+
+        <label for="annee_publication">Année de publication :</label>
+        <input type="number" id="annee_publication" name="annee_publication" required><br>
+
+        <label for="quantite">Quantité :</label>
+        <input type="number" id="quantite" name="quantite" required><br>
+
+        <button type="submit">Ajouter</button>
+    </form>
+
+    <!-- Liste des livres -->
     <h2>Liste des livres</h2>
     <table border="1">
         <tr>
             <th>ID</th>
             <th>Titre</th>
             <th>Auteur</th>
-            <th>Année</th>
+            <th>Année de publication</th>
             <th>Quantité</th>
             <th>Actions</th>
         </tr>
@@ -42,28 +45,15 @@
             <td>{{ livre[3] }}</td>
             <td>{{ livre[4] }}</td>
             <td>
-                <!-- Si l'utilisateur est un administrateur, il peut supprimer le livre -->
-                {% if role == 'Admin' %}
-                    <form method="POST" action="/supprimer_livre/{{ livre[0] }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce livre ?');">
-                        <button type="submit">Supprimer</button>
-                    </form>
-                {% endif %}
-
-                <!-- Si l'utilisateur est authentifié, il peut emprunter le livre -->
-                {% if est_authentifie() %}
-                    {% if livre[4] > 0 %}
-                        <form method="POST" action="/emprunter/{{ livre[0] }}">
-                            <button type="submit">Emprunter</button>
-                        </form>
-                    {% else %}
-                        <span>Indisponible</span>
-                    {% endif %}
-                {% endif %}
+                <!-- Bouton pour supprimer un livre -->
+                <form action="{{ url_for('supprimer_livre', livre_id=livre[0]) }}" method="post" style="display:inline;">
+                    <button type="submit">Supprimer</button>
+                </form>
+                <!-- Bouton pour modifier un livre -->
+                <a href="{{ url_for('modifier_livre_form', livre_id=livre[0]) }}">Modifier</a>
             </td>
         </tr>
         {% endfor %}
     </table>
-
-    <a href="/">Retour à l'accueil</a>
 </body>
 </html>
