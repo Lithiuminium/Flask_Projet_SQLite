@@ -74,5 +74,27 @@ def enregistrer_client():
     conn.close()
     return redirect('/consultation/')  # Redirection après enregistrement                                                                                                                                       
 
+# Nouvelle route pour rechercher un client par son nom
+@app.route('/fiche_nom/', methods=['GET', 'POST'])
+def fiche_nom():
+    if not est_authentifie():
+        return redirect(url_for('authentification'))
+
+    if request.method == 'POST':
+        nom = request.form['nom']
+        
+        # Connexion à la base de données pour rechercher le client
+        conn = sqlite3.connect('database.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM clients WHERE nom = ?', (nom,))
+        resultats = cursor.fetchall()
+        conn.close()
+
+        # Renvoyer les résultats à la page HTML
+        return render_template('fiche_nom.html', resultats=resultats)
+
+    # Si méthode GET, afficher le formulaire
+    return render_template('fiche_nom.html', resultats=None)
+
 if __name__ == "__main__":
     app.run(debug=True)
