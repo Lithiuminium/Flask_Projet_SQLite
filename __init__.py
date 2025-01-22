@@ -89,32 +89,27 @@ def gerer_livres():
 
     return render_template('livres.html', livres=livres, role=session.get('role'))
 
-@app.route('/retour/<int:id_emprunt>', methods=['POST'])
-def retourner_livre(id_emprunt):
+# Route pour emprunter un livre
+@app.route('/emprunter/<int:id_livre>', methods=['POST'])
+def emprunter_livre(id_livre):
     if not est_authentifie():
         return redirect(url_for('authentification'))
 
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
 
-    # Vérifier quel livre est emprunté
-    cursor.execute('SELECT ID_livre FROM Emprunts WHERE ID_emprunt = ?', (id_emprunt,))
-    emprunt = cursor.fetchone()
-    if emprunt:
-        # Remettre le livre en stock
-        cursor.execute('UPDATE Livres SET Quantite = Quantite + 1 WHERE ID_livre = ?', (emprunt[0],))
-        # Mettre à jour le statut de l'emprunt
-        cursor.execute('''
-            UPDATE Emprunts 
-            SET Statut = "Terminé", Date_retour = DATE("now")
-            WHERE ID_emprunt = ?
-        ''', (id_emprunt,))
+    cursor.execute('SELECT Quantite FROM Livres WHERE ID_livre = ?', (id_livre,))
+    livre = cursor.fetchone()
+    if livre and livre[0] > 0:
+        cursor.execute('UPDATE Livres SET Quantite = Quantite - 1 WHERE ID_livre = ?', (id_livre,))
+        cursor.execute(
+            'INSERT INTO Emprunts (ID_utilisateur, ID_livre, Date_emprunt) VALUES (?, ?, DATE("now"))',
+            (session['utilisateur_id'], id_livre)
+        )
         conn.commit()
 
     conn.close()
-    return redirect(url_for('mes_emprunts'))
-
-
+    return redirect(url_for('gerer_livres'))
 
 # Route pour retourner un livre
 @app.route('/retour/<int:id_emprunt>', methods=['POST'])
@@ -133,7 +128,7 @@ def retourner_livre(id_emprunt):
         conn.commit()
 
     conn.close()
-    return redirect(url_for('gerer_livres'))
+    return redirect(url_for('mes_emprunts'))
 
 # Route pour afficher les emprunts d'un utilisateur
 @app.route('/mes_emprunts')
@@ -143,11 +138,11 @@ def mes_emprunts():
 
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
-    cursor.execute('''
+    cursor.execute(''' 
         SELECT E.ID_emprunt, L.Titre, L.Auteur, E.Date_emprunt, E.Date_retour, E.Statut
         FROM Emprunts E
         JOIN Livres L ON E.ID_livre = L.ID_livre
-        WHERE E.ID_utilisateur = ?
+        WHERE E.ID_utilisateur = ? AND E.Statut != "Terminé"
     ''', (session['utilisateur_id'],))
     emprunts = cursor.fetchall()
     conn.close()
@@ -162,10 +157,11 @@ def voir_emprunts():
 
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
-    cursor.execute('''
+    cursor.execute(''' 
         SELECT E.ID_emprunt, E.ID_utilisateur, L.Titre, L.Auteur, E.Date_emprunt, E.Date_retour, E.Statut
         FROM Emprunts E
         JOIN Livres L ON E.ID_livre = L.ID_livre
+        WHERE E.Statut != "Terminé"
     ''')
     emprunts = cursor.fetchall()
     conn.close()
