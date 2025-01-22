@@ -1,5 +1,4 @@
 from flask import Flask, render_template, jsonify, request, redirect, url_for, session
-from werkzeug.utils import secure_filename
 import sqlite3
 
 app = Flask(__name__)
@@ -36,6 +35,7 @@ def authentification():
         if username in utilisateurs and utilisateurs[username]["password"] == password:
             session['authentifie'] = True
             session['role'] = utilisateurs[username]["role"]
+            session['utilisateur_id'] = username
             return redirect(url_for('home'))
 
         return render_template('formulaire_authentification.html', error=True)
