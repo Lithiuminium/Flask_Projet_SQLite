@@ -46,7 +46,20 @@ def logout():
     session.clear()
     return redirect(url_for('authentification'))
 
-# Route pour gérer les livres
+# Route pour consulter les clients
+@app.route('/clients')
+def consultation_clients():
+    if not est_authentifie():
+        return redirect(url_for('authentification'))
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM clients;')
+    clients = cursor.fetchall()
+    conn.close()
+    return render_template('read_data.html', clients=clients)
+
+# Routes pour gérer les livres
 @app.route('/livres', methods=['GET', 'POST'])
 def gerer_livres():
     if not est_authentifie():
@@ -98,20 +111,62 @@ def emprunter_livre(id_livre):
     conn.close()
     return redirect(url_for('gerer_livres'))
 
-# Route pour supprimer un livre (Admin uniquement)
-@app.route('/supprimer_livre/<int:id_livre>', methods=['POST'])
-def supprimer_livre(id_livre):
-    if not est_admin():
-        return "<h2>Accès refusé : vous devez être administrateur pour supprimer un livre.</h2>", 403
+# Route pour retourner un livre
+@app.route('/retour/<int:id_emprunt>', methods=['POST'])
+def retourner_livre(id_emprunt):
+    if not est_authentifie():
+        return redirect(url_for('authentification'))
 
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
 
-    cursor.execute('DELETE FROM Livres WHERE ID_livre = ?', (id_livre,))
-    conn.commit()
+    cursor.execute('SELECT ID_livre FROM Emprunts WHERE ID_emprunt = ?', (id_emprunt,))
+    emprunt = cursor.fetchone()
+    if emprunt:
+        cursor.execute('UPDATE Livres SET Quantite = Quantite + 1 WHERE ID_livre = ?', (emprunt[0],))
+        cursor.execute('UPDATE Emprunts SET Statut = "Terminé", Date_retour = DATE("now") WHERE ID_emprunt = ?', (id_emprunt,))
+        conn.commit()
+
+    conn.close()
+    return redirect(url_for('mes_emprunts'))
+
+# Route pour afficher les emprunts d'un utilisateur
+@app.route('/mes_emprunts')
+def mes_emprunts():
+    if not est_authentifie():
+        return redirect(url_for('authentification'))
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute(''' 
+        SELECT E.ID_emprunt, L.Titre, L.Auteur, E.Date_emprunt, E.Date_retour, E.Statut
+        FROM Emprunts E
+        JOIN Livres L ON E.ID_livre = L.ID_livre
+        WHERE E.ID_utilisateur = ? AND E.Statut != "Terminé"
+    ''', (session['utilisateur_id'],))
+    emprunts = cursor.fetchall()
     conn.close()
 
-    return redirect(url_for('gerer_livres'))
+    return render_template('mes_emprunts.html', emprunts=emprunts)
+
+# Route pour afficher tous les emprunts (Admin seulement)
+@app.route('/emprunts', methods=['GET'])
+def voir_emprunts():
+    if not est_authentifie() or not est_admin():
+        return "<h2>Accès refusé : vous devez être administrateur pour voir les emprunts.</h2>", 403
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute(''' 
+        SELECT E.ID_emprunt, E.ID_utilisateur, L.Titre, L.Auteur, E.Date_emprunt, E.Date_retour, E.Statut
+        FROM Emprunts E
+        JOIN Livres L ON E.ID_livre = L.ID_livre
+        WHERE E.Statut != "Terminé"
+    ''')
+    emprunts = cursor.fetchall()
+    conn.close()
+
+    return render_template('emprunts.html', emprunts=emprunts)
 
 if __name__ == "__main__":
     app.run(debug=True)
