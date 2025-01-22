@@ -26,22 +26,24 @@ def lecture():
         return redirect(url_for('authentification'))
     return "<h2>Bravo, vous êtes authentifié</h2>"
 
-# Route pour l'authentification
 @app.route('/authentification', methods=['GET', 'POST'])
 def authentification():
     if request.method == 'POST':
+        # Récupérer les informations de connexion
         username = request.form['username']
         password = request.form['password']
         
         # Vérification des identifiants
         if username in utilisateurs and utilisateurs[username] == password:
-            session['authentifie'] = True
-            return redirect(url_for('lecture'))  # Redirige vers une page sécurisée après authentification
+            session['authentifie'] = True  # Marquer l'utilisateur comme authentifié
+            return redirect(url_for('fiche_nom'))  # Rediriger directement vers fiche_nom
 
         # Si les identifiants sont incorrects
         return render_template('formulaire_authentification.html', error=True)
 
+    # Afficher le formulaire d'authentification
     return render_template('formulaire_authentification.html', error=False)
+
 
 # Route pour consulter les données dans la base de données
 @app.route('/consultation/')
