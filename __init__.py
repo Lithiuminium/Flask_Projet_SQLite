@@ -89,7 +89,6 @@ def gerer_livres():
 
     return render_template('livres.html', livres=livres, role=session.get('role'))
 
-# Route pour emprunter un livre
 @app.route('/emprunter/<int:id_livre>', methods=['POST'])
 def emprunter_livre(id_livre):
     if not est_authentifie():
@@ -98,18 +97,29 @@ def emprunter_livre(id_livre):
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
 
+    # Vérifiez la disponibilité du livre
     cursor.execute('SELECT Quantite FROM Livres WHERE ID_livre = ?', (id_livre,))
     livre = cursor.fetchone()
-    if livre and livre[0] > 0:
-        cursor.execute('UPDATE Livres SET Quantite = Quantite - 1 WHERE ID_livre = ?', (id_livre,))
-        cursor.execute(
-            'INSERT INTO Emprunts (ID_utilisateur, ID_livre, Date_emprunt) VALUES (?, ?, DATE("now"))',
-            (session['utilisateur_id'], id_livre)
-        )
-        conn.commit()
 
+    if not livre:
+        conn.close()
+        return "<h2>Erreur : Livre introuvable.</h2>", 404
+
+    if livre[0] <= 0:
+        conn.close()
+        return "<h2>Erreur : Le livre n'est pas disponible.</h2>", 400
+
+    # Réduire la quantité et enregistrer l'emprunt
+    cursor.execute('UPDATE Livres SET Quantite = Quantite - 1 WHERE ID_livre = ?', (id_livre,))
+    cursor.execute(
+        'INSERT INTO Emprunts (ID_utilisateur, ID_livre, Date_emprunt) VALUES (?, ?, DATE("now"))',
+        (session['utilisateur_id'], id_livre)
+    )
+    conn.commit()
     conn.close()
-    return redirect(url_for('gerer_livres'))
+
+    return redirect(url_for('mes_emprunts'))
+
 
 # Route pour retourner un livre
 @app.route('/retour/<int:id_emprunt>', methods=['POST'])
