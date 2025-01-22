@@ -26,22 +26,25 @@ def home():
 
 
 
-# Route pour l'authentification
 @app.route('/authentification', methods=['GET', 'POST'])
 def authentification():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         
+        # Vérifier les identifiants
         if username in utilisateurs and utilisateurs[username]["password"] == password:
-            session['authentifie'] = True
-            session['role'] = utilisateurs[username]["role"]
-            session['utilisateur_id'] = username
-            return redirect(url_for('home'))
+            session['authentifie'] = True  # Marquer l'utilisateur comme authentifié
+            session['role'] = utilisateurs[username]["role"]  # Stocker le rôle
+            session['utilisateur_id'] = username  # Stocker l'identifiant utilisateur
+            return redirect(url_for('home'))  # Rediriger vers la page d'accueil
 
+        # Si les identifiants sont incorrects, afficher une erreur
         return render_template('formulaire_authentification.html', error=True)
 
+    # Afficher le formulaire de connexion
     return render_template('formulaire_authentification.html', error=False)
+
 
 # Route pour la déconnexion
 @app.route('/logout')
