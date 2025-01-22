@@ -52,19 +52,6 @@ def logout():
     return redirect(url_for('authentification'))  # Rediriger vers la page de connexion
 
 
-# Route pour consulter les clients (Admin seulement)
-@app.route('/clients')
-def consultation_clients():
-    if not est_authentifie() or not est_admin():
-        return redirect(url_for('authentification'))
-
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM clients;')
-    clients = cursor.fetchall()
-    conn.close()
-    return render_template('read_data.html', clients=clients)
-
 # Route pour gérer les livres (Affichage des livres, Ajout, Suppression et Recherche)
 @app.route('/livres', methods=['GET', 'POST'])
 def gerer_livres():
