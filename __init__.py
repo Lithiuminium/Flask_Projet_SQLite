@@ -148,6 +148,25 @@ def mes_emprunts():
     conn.close()
 
     return render_template('mes_emprunts.html', emprunts=emprunts)
+    
+# Route pour supprimer un livre
+@app.route('/supprimer_livre/<int:id_livre>', methods=['POST'])
+def supprimer_livre(id_livre):
+    if not est_authentifie():
+        return redirect(url_for('authentification'))
+
+    if not est_admin():
+        return "<h2>Accès refusé : vous devez être administrateur pour supprimer un livre.</h2>", 403
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    # Suppression du livre de la table Livres
+    cursor.execute('DELETE FROM Livres WHERE ID_livre = ?', (id_livre,))
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('gerer_livres'))
 
 # Route pour afficher tous les emprunts (Admin seulement)
 @app.route('/emprunts', methods=['GET'])
