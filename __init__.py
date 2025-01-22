@@ -2,30 +2,29 @@ from flask import Flask, render_template, jsonify, request, redirect, url_for, s
 from werkzeug.utils import secure_filename
 import sqlite3
 
-app = Flask(__name__)                                                                                                                  
+app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'  # Clé secrète pour les sessions
 
-# Dictionnaire des utilisateurs pour l'authentification
+# Dictionnaire des utilisateurs pour l'authentification (ajout d'un rôle Admin/User)
 utilisateurs = {
-    "user": "12345"
+    "admin": {"password": "admin123", "role": "Admin"},
+    "user": {"password": "12345", "role": "User"}
 }
 
 # Fonction pour vérifier si un utilisateur est authentifié
 def est_authentifie():
     return session.get('authentifie', False)
 
+# Fonction pour vérifier si l'utilisateur est admin
+def est_admin():
+    return session.get('role') == 'Admin'
+
 # Route principale
 @app.route('/')
-def hello_world():
-    return render_template('hello.html')
+def home():
+    return render_template('home.html')
 
-# Route pour accéder à une page nécessitant une authentification
-@app.route('/lecture')
-def lecture():
-    if not est_authentifie():
-        return redirect(url_for('authentification'))
-    return "<h2>Bravo, vous êtes authentifié</h2>"
-
+# Route pour l'authentification
 @app.route('/authentification', methods=['GET', 'POST'])
 def authentification():
     if request.method == 'POST':
@@ -34,71 +33,123 @@ def authentification():
         password = request.form['password']
         
         # Vérification des identifiants
-        if username in utilisateurs and utilisateurs[username] == password:
-            session['authentifie'] = True  # Marquer l'utilisateur comme authentifié
-            return redirect(url_for('fiche_nom'))  # Rediriger directement vers fiche_nom
+        if username in utilisateurs and utilisateurs[username]["password"] == password:
+            session['authentifie'] = True
+            session['role'] = utilisateurs[username]["role"]
+            return redirect(url_for('home'))
 
-        # Si les identifiants sont incorrects
         return render_template('formulaire_authentification.html', error=True)
 
-    # Afficher le formulaire d'authentification
     return render_template('formulaire_authentification.html', error=False)
 
+# Route pour la déconnexion
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('authentification'))
 
-# Route pour consulter les données dans la base de données
-@app.route('/consultation/')
-def ReadBDD():
+# Route pour consulter les clients
+@app.route('/clients')
+def consultation_clients():
+    if not est_authentifie():
+        return redirect(url_for('authentification'))
+
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM clients;')
-    data = cursor.fetchall()
+    clients = cursor.fetchall()
     conn.close()
-    return render_template('read_data.html', data=data)
+    return render_template('read_data.html', clients=clients)
 
-# Route pour afficher le formulaire d'ajout de client
-@app.route('/enregistrer_client', methods=['GET'])
-def formulaire_client():
-    return render_template('formulaire.html')
+# Routes pour gérer les livres
+@app.route('/livres', methods=['GET', 'POST'])
+def gerer_livres():
+    if not est_authentifie():
+        return redirect(url_for('authentification'))
 
-# Route pour enregistrer un nouveau client
-@app.route('/enregistrer_client', methods=['POST'])
-def enregistrer_client():
-    nom = request.form['nom']
-    prenom = request.form['prenom']
-
-    # Connexion à la base de données
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
 
-    # Exécution de la requête SQL pour insérer un nouveau client
-    cursor.execute('INSERT INTO clients (created, nom, prenom, adresse) VALUES (?, ?, ?, ?)', (1002938, nom, prenom, "ICI"))
-    conn.commit()
-    conn.close()
-    return redirect('/consultation/')  # Redirection après enregistrement                                                                                                                                       
-
-@app.route('/fiche_nom/', methods=['GET', 'POST'])
-def fiche_nom():
-    # Vérifiez si l'utilisateur est authentifié
-    if not est_authentifie():
-        return "<h2>Accès refusé : vous n'êtes pas authentifié.</h2>", 403
-    
-    resultats = []  # Initialise les résultats par défaut
     if request.method == 'POST':
-        # Récupère le nom du formulaire
-        nom_recherche = request.form.get('name')
+        if not est_admin():
+            return "<h2>Accès refusé : vous devez être administrateur pour ajouter des livres.</h2>", 403
 
-        # Connectez-vous à la base et effectuez la requête
-        conn = sqlite3.connect('database.db')
-        cursor = conn.cursor()
+        # Ajouter un nouveau livre
+        titre = request.form['titre']
+        auteur = request.form['auteur']
+        annee = request.form['annee']
+        quantite = request.form['quantite']
 
-        # Requête sécurisée pour éviter les injections SQL
-        cursor.execute("SELECT nom, prenom, adresse FROM clients WHERE nom = ?", (nom_recherche,))
-        resultats = cursor.fetchall()
-        conn.close()
+        cursor.execute(
+            'INSERT INTO Livres (Titre, Auteur, Annee_publication, Quantite) VALUES (?, ?, ?, ?)',
+            (titre, auteur, annee, quantite)
+        )
+        conn.commit()
 
-    # Rendre la page HTML et passer les résultats
-    return render_template('fiche_nom.html', resultats=resultats)
+    # Récupérer tous les livres
+    cursor.execute('SELECT * FROM Livres')
+    livres = cursor.fetchall()
+    conn.close()
 
+    return render_template('livres.html', livres=livres, role=session.get('role'))
+
+# Route pour emprunter un livre
+@app.route('/emprunter/<int:id_livre>', methods=['POST'])
+def emprunter_livre(id_livre):
+    if not est_authentifie():
+        return redirect(url_for('authentification'))
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    # Vérifier la disponibilité du livre
+    cursor.execute('SELECT Quantite FROM Livres WHERE ID_livre = ?', (id_livre,))
+    livre = cursor.fetchone()
+    if livre and livre[0] > 0:
+        # Réduire la quantité et enregistrer l'emprunt
+        cursor.execute('UPDATE Livres SET Quantite = Quantite - 1 WHERE ID_livre = ?', (id_livre,))
+        cursor.execute(
+            'INSERT INTO Emprunts (ID_utilisateur, ID_livre) VALUES (?, ?)',
+            (session['utilisateur_id'], id_livre)
+        )
+        conn.commit()
+
+    conn.close()
+    return redirect(url_for('gerer_livres'))
+
+# Route pour retourner un livre
+@app.route('/retour/<int:id_emprunt>', methods=['POST'])
+def retourner_livre(id_emprunt):
+    if not est_authentifie():
+        return redirect(url_for('authentification'))
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    # Marquer l'emprunt comme terminé
+    cursor.execute('SELECT ID_livre FROM Emprunts WHERE ID_emprunt = ?', (id_emprunt,))
+    emprunt = cursor.fetchone()
+    if emprunt:
+        cursor.execute('UPDATE Livres SET Quantite = Quantite + 1 WHERE ID_livre = ?', (emprunt[0],))
+        cursor.execute('UPDATE Emprunts SET Statut = "Terminé", Date_retour = DATE("now") WHERE ID_emprunt = ?', (id_emprunt,))
+        conn.commit()
+
+    conn.close()
+    return redirect(url_for('gerer_livres'))
+
+# Route pour afficher les emprunts de l'utilisateur
+@app.route('/mes_emprunts')
+def mes_emprunts():
+    if not est_authentifie():
+        return redirect(url_for('authentification'))
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM Emprunts WHERE ID_utilisateur = ?', (session['utilisateur_id'],))
+    emprunts = cursor.fetchall()
+    conn.close()
+
+    return render_template('mes_emprunts.html', emprunts=emprunts)
 
 if __name__ == "__main__":
     app.run(debug=True)
