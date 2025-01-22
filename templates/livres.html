@@ -6,6 +6,25 @@
 </head>
 <body>
     <h1>Liste des livres</h1>
+
+    <!-- Formulaire pour ajouter un livre (uniquement pour les admins) -->
+    {% if role == 'Admin' %}
+        <h2>Ajouter un livre</h2>
+        <form method="POST" action="/livres">
+            <label for="titre">Titre</label>
+            <input type="text" name="titre" id="titre" required><br>
+            <label for="auteur">Auteur</label>
+            <input type="text" name="auteur" id="auteur" required><br>
+            <label for="annee">Année</label>
+            <input type="number" name="annee" id="annee" required><br>
+            <label for="quantite">Quantité</label>
+            <input type="number" name="quantite" id="quantite" required><br>
+            <button type="submit">Ajouter le livre</button>
+        </form>
+        <hr>
+    {% endif %}
+
+    <h2>Liste des livres</h2>
     <table border="1">
         <tr>
             <th>ID</th>
@@ -23,15 +42,28 @@
             <td>{{ livre[3] }}</td>
             <td>{{ livre[4] }}</td>
             <td>
+                <!-- Si l'utilisateur est un administrateur, il peut supprimer le livre -->
                 {% if role == 'Admin' %}
                     <form method="POST" action="/supprimer_livre/{{ livre[0] }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce livre ?');">
                         <button type="submit">Supprimer</button>
                     </form>
                 {% endif %}
+
+                <!-- Si l'utilisateur est authentifié, il peut emprunter le livre -->
+                {% if est_authentifie() and livre[4] > 0 %}
+                    {% if role == 'Admin' or role == 'User' %}
+                        <form method="POST" action="/emprunter/{{ livre[0] }}">
+                            <button type="submit">Emprunter</button>
+                        </form>
+                    {% endif %}
+                {% elif livre[4] == 0 %}
+                    <span>Indisponible</span>
+                {% endif %}
             </td>
         </tr>
         {% endfor %}
     </table>
+
     <a href="/">Retour à l'accueil</a>
 </body>
 </html>
