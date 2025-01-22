@@ -18,10 +18,12 @@ def est_authentifie():
 def est_admin():
     return session.get('role') == 'Admin'
 
-# Route principale
 @app.route('/')
 def home():
-    return render_template('home.html', est_authentifie=est_authentifie)
+    if not est_authentifie():  # Vérifier si l'utilisateur est authentifié
+        return redirect(url_for('authentification'))  # Si non, rediriger vers la page de connexion
+    return render_template('home.html')  # Si oui, afficher la page d'accueil
+
 
 
 # Route pour l'authentification
