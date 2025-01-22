@@ -8,23 +8,26 @@
 <body>
     <h1>Gestion des Livres</h1>
 
-    <!-- Formulaire pour ajouter un livre -->
-    <h2>Ajouter un livre</h2>
-    <form action="{{ url_for('ajouter_livre') }}" method="post">
-        <label for="titre">Titre :</label>
-        <input type="text" id="titre" name="titre" required><br>
+    <!-- Formulaire pour ajouter un livre (uniquement pour les admins) -->
+    {% if role == 'Admin' %}
+        <h2>Ajouter un livre</h2>
+        <form action="{{ url_for('gerer_livres') }}" method="post">
+            <label for="titre">Titre :</label>
+            <input type="text" id="titre" name="titre" required><br>
 
-        <label for="auteur">Auteur :</label>
-        <input type="text" id="auteur" name="auteur" required><br>
+            <label for="auteur">Auteur :</label>
+            <input type="text" id="auteur" name="auteur" required><br>
 
-        <label for="annee_publication">Année de publication :</label>
-        <input type="number" id="annee_publication" name="annee_publication" required><br>
+            <label for="annee_publication">Année de publication :</label>
+            <input type="number" id="annee_publication" name="annee_publication" required><br>
 
-        <label for="quantite">Quantité :</label>
-        <input type="number" id="quantite" name="quantite" required><br>
+            <label for="quantite">Quantité :</label>
+            <input type="number" id="quantite" name="quantite" required><br>
 
-        <button type="submit">Ajouter</button>
-    </form>
+            <button type="submit">Ajouter</button>
+        </form>
+        <hr>
+    {% endif %}
 
     <!-- Liste des livres -->
     <h2>Liste des livres</h2>
@@ -39,18 +42,29 @@
         </tr>
         {% for livre in livres %}
         <tr>
-            <td>{{ livre[0] }}</td>
-            <td>{{ livre[1] }}</td>
-            <td>{{ livre[2] }}</td>
-            <td>{{ livre[3] }}</td>
-            <td>{{ livre[4] }}</td>
+            <td>{{ livre[0] }}</td>  <!-- ID du livre -->
+            <td>{{ livre[1] }}</td>  <!-- Titre du livre -->
+            <td>{{ livre[2] }}</td>  <!-- Auteur du livre -->
+            <td>{{ livre[3] }}</td>  <!-- Année de publication -->
+            <td>{{ livre[4] }}</td>  <!-- Quantité disponible -->
             <td>
-                <!-- Bouton pour supprimer un livre -->
-                <form action="{{ url_for('supprimer_livre', livre_id=livre[0]) }}" method="post" style="display:inline;">
-                    <button type="submit">Supprimer</button>
-                </form>
-                <!-- Bouton pour modifier un livre -->
-                <a href="{{ url_for('modifier_livre_form', livre_id=livre[0]) }}">Modifier</a>
+                <!-- Si l'utilisateur est un administrateur, il peut supprimer le livre -->
+                {% if role == 'Admin' %}
+                    <form action="{{ url_for('supprimer_livre', livre_id=livre[0]) }}" method="post" style="display:inline;">
+                        <button type="submit">Supprimer</button>
+                    </form>
+                {% endif %}
+
+                <!-- Si l'utilisateur est authentifié, il peut emprunter le livre -->
+                {% if est_authentifie() %}
+                    {% if livre[4] > 0 %}
+                        <form action="{{ url_for('emprunter_livre', id_livre=livre[0]) }}" method="post" style="display:inline;">
+                            <button type="submit">Emprunter</button>
+                        </form>
+                    {% else %}
+                        <span>Indisponible</span>
+                    {% endif %}
+                {% endif %}
             </td>
         </tr>
         {% endfor %}
