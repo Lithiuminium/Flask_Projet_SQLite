@@ -12,5 +12,16 @@
         <input type="text" id="name" name="name" required>
         <button type="submit">Rechercher</button>
     </form>
+
+    {% if resultats %}
+        <h2>Résultats :</h2>
+        <ul>
+            {% for client in resultats %}
+                <li>{{ client }}</li>
+            {% endfor %}
+        </ul>
+    {% elif resultats is not none %}
+        <p>Aucun client trouvé avec ce nom.</p>
+    {% endif %}
 </body>
 </html>
