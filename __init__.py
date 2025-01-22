@@ -59,7 +59,6 @@ def consultation_clients():
     conn.close()
     return render_template('read_data.html', clients=clients)
 
-# Routes pour gérer les livres
 @app.route('/livres', methods=['GET', 'POST'])
 def gerer_livres():
     if not est_authentifie():
@@ -88,6 +87,7 @@ def gerer_livres():
     conn.close()
 
     return render_template('livres.html', livres=livres, role=session.get('role'))
+
 
 # Route pour emprunter un livre
 @app.route('/emprunter/<int:id_livre>', methods=['POST'])
