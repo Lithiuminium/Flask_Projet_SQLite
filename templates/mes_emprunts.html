@@ -10,9 +10,9 @@
         <tr>
             <th>ID Emprunt</th>
             <th>Titre</th>
+            <th>Auteur</th>
             <th>Date d'emprunt</th>
             <th>Date de retour</th>
-            <th>Statut</th>
             <th>Actions</th>
         </tr>
         {% for emprunt in emprunts %}
@@ -21,12 +21,13 @@
             <td>{{ emprunt[1] }}</td>
             <td>{{ emprunt[2] }}</td>
             <td>{{ emprunt[3] or 'Non retourné' }}</td>
-            <td>{{ emprunt[4] }}</td>
             <td>
                 {% if emprunt[4] != "Terminé" %}
                 <form method="POST" action="/retour/{{ emprunt[0] }}">
                     <button type="submit">Retourner</button>
                 </form>
+                {% else %}
+                Livre retourné
                 {% endif %}
             </td>
         </tr>
