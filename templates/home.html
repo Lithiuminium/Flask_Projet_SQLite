@@ -2,15 +2,21 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Page d'accueil</title>
 </head>
 <body>
-    <h1>Bienvenue dans la bibliothèque</h1>
-    <nav>
-        <a href="/clients">Liste des clients</a> |
-        <a href="/livres">Gérer les livres</a> |
-        <a href="/mes_emprunts">Mes emprunts</a> |
-        <a href="/logout">Se déconnecter</a>
-    </nav>
+    <h1>Bienvenue à la gestion de la bibliothèque</h1>
+    {% if est_authentifie() %}
+        <p>Bonjour {{ session['utilisateur_id'] }}</p>
+        <a href="{{ url_for('logout') }}">Se déconnecter</a>
+        <ul>
+            <li><a href="{{ url_for('gerer_livres') }}">Gérer les livres</a></li>
+            <li><a href="{{ url_for('consultation_clients') }}">Consulter les clients (Admin seulement)</a></li>
+            <li><a href="{{ url_for('mes_emprunts') }}">Mes emprunts</a></li>
+        </ul>
+    {% else %}
+        <a href="{{ url_for('authentification') }}">Se connecter</a>
+    {% endif %}
 </body>
 </html>
