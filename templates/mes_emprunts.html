@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Emprunts</title>
+</head>
+<body>
+    <h1>Mes emprunts</h1>
+    <table border="1">
+        <tr>
+            <th>Titre</th>
+            <th>Auteur</th>
+            <th>Date d'emprunt</th>
+        </tr>
+        {% for emprunt in emprunts %}
+        <tr>
+            <td>{{ emprunt[1] }}</td>
+            <td>{{ emprunt[2] }}</td>
+            <td>{{ emprunt[3] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
