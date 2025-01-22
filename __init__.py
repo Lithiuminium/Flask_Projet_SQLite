@@ -21,7 +21,8 @@ def est_admin():
 # Route principale
 @app.route('/')
 def home():
-    return render_template('home.html')
+    return render_template('home.html', est_authentifie=est_authentifie)
+
 
 # Route pour l'authentification
 @app.route('/authentification', methods=['GET', 'POST'])
