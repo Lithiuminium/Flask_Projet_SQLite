@@ -60,6 +60,7 @@ def consultation_clients():
     return render_template('read_data.html', clients=clients)
 
 @app.route('/livres', methods=['GET', 'POST'])
+@app.route('/livres', methods=['GET', 'POST'])
 def gerer_livres():
     if not est_authentifie():
         return redirect(url_for('authentification'))
@@ -82,11 +83,16 @@ def gerer_livres():
         )
         conn.commit()
 
-    cursor.execute('SELECT * FROM Livres')
-    livres = cursor.fetchall()
+    try:
+        cursor.execute('SELECT * FROM Livres')
+        livres = cursor.fetchall()
+    except sqlite3.Error as e:
+        return f"Erreur lors de la récupération des livres: {e}"
+
     conn.close()
 
     return render_template('livres.html', livres=livres, role=session.get('role'))
+
 
 
 # Route pour emprunter un livre
