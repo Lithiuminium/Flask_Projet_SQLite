@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gérer les livres</title>
+</head>
+<body>
+    <h1>Gestion des livres</h1>
+
+    <!-- Formulaire pour ajouter un livre (Admin seulement) -->
+    {% if role == 'Admin' %}
+        <h2>Ajouter un livre</h2>
+        <form action="{{ url_for('gerer_livres') }}" method="post">
+            <label for="titre">Titre :</label>
+            <input type="text" id="titre" name="titre" required><br>
+
+            <label for="auteur">Auteur :</label>
+            <input type="text" id="auteur" name="auteur" required><br>
+
+            <label for="annee">Année :</label>
+            <input type="number" id="annee" name="annee" required><br>
+
+            <label for="quantite">Quantité :</label>
+            <input type="number" id="quantite" name="quantite" required><br>
+
+            <button type="submit" name="ajouter_livre">Ajouter</button>
+        </form>
+        <hr>
+
+        <!-- Formulaire pour ajouter du stock -->
+        <h2>Ajouter du stock</h2>
+        <form action="{{ url_for('gerer_livres') }}" method="post">
+            <label for="livre_id">Livre :</label>
+            <select name="livre_id" id="livre_id">
+                {% for livre in livres %}
+                    <option value="{{ livre[0] }}">{{ livre[1] }} ({{ livre[4] }} disponibles)</option>
+                {% endfor %}
+            </select><br>
+
+            <label for="quantite">Quantité à ajouter :</label>
+            <input type="number" id="quantite" name="quantite" required><br>
+
+            <button type="submit" name="ajouter_stock">Ajouter stock</button>
+        </form>
+
+        <hr>
+
+        <!-- Formulaire pour supprimer un livre -->
+        <h2>Supprimer un livre</h2>
+        <form action="{{ url_for('gerer_livres') }}" method="post">
+            <label for="livre_id">Livre à supprimer :</label>
+            <select name="livre_id" id="livre_id">
+                {% for livre in livres %}
+                    <option value="{{ livre[0] }}">{{ livre[1] }}</option>
+                {% endfor %}
+            </select><br>
+
+            <button type="submit" name="supprimer_livre">Supprimer</button>
+        </form>
+        <hr>
+    {% endif %}
+
+    <h2>Liste des livres</h2>
+    <form method="post">
+        <label for="recherche">Recherche :</label>
+        <input type="text" id="recherche" name="recherche" placeholder="Rechercher par titre ou auteur">
+        <button type="submit">Rechercher</button>
+    </form>
+
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Titre</th>
+            <th>Auteur</th>
+            <th>Année</th>
+            <th>Quantité</th>
+            <th>Actions</th>
+        </tr>
+        {% for livre in livres %}
+        <tr>
+            <td>{{ livre[0] }}</td>
+            <td>{{ livre[1] }}</td>
+            <td>{{ livre[2] }}</td>
+            <td>{{ livre[3] }}</td>
+            <td>{{ livre[4] }}</td>
+            <td>
+                {% if est_authentifie() %}
+                    {% if livre[4] > 0 %}
+                        <form action="{{ url_for('emprunter_livre', id_livre=livre[0]) }}" method="post" style="display:inline;">
+                            <button type="submit">Emprunter</button>
+                        </form>
+                    {% else %}
+                        <span>Indisponible</span>
+                    {% endif %}
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
