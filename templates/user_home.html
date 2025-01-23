@@ -15,7 +15,9 @@
     <form method="POST" action="{{ url_for('gerer_livres') }}">
         <input type="text" name="recherche" placeholder="Titre, Auteur ou Année">
         <button type="submit">Rechercher</button>
-        <button type="submit" name="reset">Reset</button>
+        <a href="{{ url_for('gerer_livres') }}" class="reset-button" style="text-decoration: none;">
+            <button type="button">Reset</button>
+        </a>
     </form>
 
     <h2>Livres disponibles</h2>
