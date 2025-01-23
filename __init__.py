@@ -171,17 +171,17 @@ def gerer_livres():
     cursor = conn.cursor()
 
     # Recherche de livres
-    recherche = request.form.get('recherche')
-    if recherche:
+    recherche = request.form.get('recherche')  # Obtenir la recherche
+    if recherche:  # Si une recherche est effectuée
         cursor.execute("""
             SELECT * FROM Livres
             WHERE Titre LIKE ? OR Auteur LIKE ? OR CAST(Annee_publication AS TEXT) LIKE ?
         """, (f'%{recherche}%', f'%{recherche}%', f'%{recherche}%'))
-    else:
+    else:  # Si aucune recherche, afficher tous les livres
         cursor.execute('SELECT * FROM Livres')
     livres = cursor.fetchall()
 
-    # Récupérer les emprunts de l'utilisateur connecté
+    # Récupérer les emprunts en cours pour l'utilisateur connecté
     cursor.execute("""
         SELECT E.ID_emprunt, L.Titre, L.Auteur, E.Date_emprunt, E.Statut
         FROM Emprunts E
@@ -191,7 +191,10 @@ def gerer_livres():
     emprunts = cursor.fetchall()
 
     conn.close()
+
+    # Transmettre uniquement les livres trouvés et les emprunts de l'utilisateur
     return render_template('user_home.html', livres=livres, emprunts=emprunts)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
