@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Utilisateur - Bibliothèque</title>
+</head>
+<body>
+    <h1>Bienvenue, Utilisateur</h1>
+    <h2>Liste des livres disponibles</h2>
+    <ul>
+        {% for livre in livres %}
+            <li>
+                {{ livre[1] }} - {{ livre[2] }} ({{ livre[3] }}) - Stock : {{ livre[4] }}
+                {% if livre[4] > 0 %}
+                    <form method="post" style="display:inline;">
+                        <input type="hidden" name="livre_id" value="{{ livre[0] }}">
+                        <button type="submit" name="emprunter">Emprunter</button>
+                    </form>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('logout') }}">Se déconnecter</a>
+</body>
+</html>
