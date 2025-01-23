@@ -1,24 +1,65 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Utilisateur - Bibliothèque</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Utilisateur</title>
 </head>
 <body>
-    <h1>Bienvenue, Utilisateur</h1>
-    <h2>Liste des livres disponibles</h2>
-    <ul>
+    <h1>Bienvenue, {{ session['utilisateur_id'] }}</h1>
+
+    <h2>Livres disponibles</h2>
+    <table border="1">
+        <tr>
+            <th>Titre</th>
+            <th>Auteur</th>
+            <th>Année</th>
+            <th>Quantité</th>
+            <th>Action</th>
+        </tr>
         {% for livre in livres %}
-            <li>
-                {{ livre[1] }} - {{ livre[2] }} ({{ livre[3] }}) - Stock : {{ livre[4] }}
+        <tr>
+            <td>{{ livre[1] }}</td>
+            <td>{{ livre[2] }}</td>
+            <td>{{ livre[3] }}</td>
+            <td>{{ livre[4] }}</td>
+            <td>
                 {% if livre[4] > 0 %}
-                    <form method="post" style="display:inline;">
-                        <input type="hidden" name="livre_id" value="{{ livre[0] }}">
-                        <button type="submit" name="emprunter">Emprunter</button>
-                    </form>
+                <form method="POST">
+                    <input type="hidden" name="livre_id" value="{{ livre[0] }}">
+                    <button type="submit" name="emprunter">Emprunter</button>
+                </form>
+                {% else %}
+                Indisponible
                 {% endif %}
-            </li>
+            </td>
+        </tr>
         {% endfor %}
-    </ul>
-    <a href="{{ url_for('logout') }}">Se déconnecter</a>
+    </table>
+
+    <h2>Mes emprunts en cours</h2>
+    <table border="1">
+        <tr>
+            <th>Titre</th>
+            <th>Auteur</th>
+            <th>Date d'emprunt</th>
+            <th>Statut</th>
+            <th>Action</th>
+        </tr>
+        {% for emprunt in emprunts %}
+        <tr>
+            <td>{{ emprunt[1] }}</td>
+            <td>{{ emprunt[2] }}</td>
+            <td>{{ emprunt[3] }}</td>
+            <td>{{ emprunt[4] }}</td>
+            <td>
+                <form method="POST">
+                    <input type="hidden" name="emprunt_id" value="{{ emprunt[0] }}">
+                    <button type="submit" name="retourner">Retourner</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
 </body>
 </html>
