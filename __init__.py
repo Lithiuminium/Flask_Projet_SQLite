@@ -27,12 +27,13 @@ def home():
 
     # Afficher la page spécifique en fonction du rôle
     if role == "Admin":
-        return render_template('admin_home.html')  # Page spécifique pour Admin
+        return redirect(url_for('admin_home'))
     elif role == "User":
-        return render_template('user_home.html')  # Page spécifique pour User
+        return redirect(url_for('user_home'))
 
     # En cas de rôle non défini
     return "<h2>Erreur : Rôle utilisateur non reconnu</h2>", 403
+
 
 
 
