@@ -171,17 +171,17 @@ def gerer_livres():
     cursor = conn.cursor()
 
     # Gérer la recherche
-    recherche = request.form.get('recherche')  # Récupérer la recherche
-    if request.method == 'POST' and 'reset' in request.form:
-        recherche = None  # Réinitialiser la recherche
-    elif recherche:  # Si une recherche est effectuée
+    livres = []
+    if request.method == 'POST' and 'recherche' in request.form:
+        recherche = request.form['recherche']
         cursor.execute("""
             SELECT * FROM Livres
             WHERE Titre LIKE ? OR Auteur LIKE ? OR CAST(Annee_publication AS TEXT) LIKE ?
         """, (f'%{recherche}%', f'%{recherche}%', f'%{recherche}%'))
-    else:  # Si aucune recherche, afficher tous les livres
+        livres = cursor.fetchall()
+    else:  # Par défaut, afficher tous les livres
         cursor.execute('SELECT * FROM Livres')
-    livres = cursor.fetchall()
+        livres = cursor.fetchall()
 
     # Récupérer les emprunts en cours pour l'utilisateur connecté
     cursor.execute("""
