@@ -162,5 +162,36 @@ def voir_emprunts():
 
     return render_template('emprunts.html', emprunts=emprunts)
 
+@app.route('/livres', methods=['GET', 'POST'])
+def gerer_livres():
+    if not est_authentifie():
+        return redirect(url_for('authentification'))
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    # Recherche de livres
+    recherche = request.form.get('recherche')
+    if recherche:
+        cursor.execute("""
+            SELECT * FROM Livres
+            WHERE Titre LIKE ? OR Auteur LIKE ? OR CAST(Annee_publication AS TEXT) LIKE ?
+        """, (f'%{recherche}%', f'%{recherche}%', f'%{recherche}%'))
+    else:
+        cursor.execute('SELECT * FROM Livres')
+    livres = cursor.fetchall()
+
+    # Récupérer les emprunts de l'utilisateur connecté
+    cursor.execute("""
+        SELECT E.ID_emprunt, L.Titre, L.Auteur, E.Date_emprunt, E.Statut
+        FROM Emprunts E
+        JOIN Livres L ON E.ID_livre = L.ID_livre
+        WHERE E.ID_utilisateur = ? AND E.Statut = "Actif"
+    """, (session['utilisateur_id'],))
+    emprunts = cursor.fetchall()
+
+    conn.close()
+    return render_template('user_home.html', livres=livres, emprunts=emprunts)
+
 if __name__ == "__main__":
     app.run(debug=True)
