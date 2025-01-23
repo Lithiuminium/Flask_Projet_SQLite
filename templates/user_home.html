@@ -12,7 +12,7 @@
     </form>
 
     <h2>Rechercher un livre</h2>
-    <form method="POST">
+    <form method="POST" action="{{ url_for('gerer_livres') }}">
         <input type="text" name="recherche" placeholder="Titre, Auteur ou Année">
         <button type="submit">Rechercher</button>
     </form>
@@ -26,24 +26,30 @@
             <th>Quantité</th>
             <th>Action</th>
         </tr>
-        {% for livre in livres %}
+        {% if livres %}
+            {% for livre in livres %}
+            <tr>
+                <td>{{ livre[1] }}</td>
+                <td>{{ livre[2] }}</td>
+                <td>{{ livre[3] }}</td>
+                <td>{{ livre[4] }}</td>
+                <td>
+                    {% if livre[4] > 0 %}
+                    <form method="POST">
+                        <input type="hidden" name="livre_id" value="{{ livre[0] }}">
+                        <button type="submit" name="emprunter">Emprunter</button>
+                    </form>
+                    {% else %}
+                    Indisponible
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        {% else %}
         <tr>
-            <td>{{ livre[1] }}</td>
-            <td>{{ livre[2] }}</td>
-            <td>{{ livre[3] }}</td>
-            <td>{{ livre[4] }}</td>
-            <td>
-                {% if livre[4] > 0 %}
-                <form method="POST">
-                    <input type="hidden" name="livre_id" value="{{ livre[0] }}">
-                    <button type="submit" name="emprunter">Emprunter</button>
-                </form>
-                {% else %}
-                Indisponible
-                {% endif %}
-            </td>
+            <td colspan="5">Aucun livre trouvé pour cette recherche.</td>
         </tr>
-        {% endfor %}
+        {% endif %}
     </table>
 
     <h2>Mes emprunts en cours</h2>
@@ -55,20 +61,26 @@
             <th>Statut</th>
             <th>Action</th>
         </tr>
-        {% for emprunt in emprunts %}
+        {% if emprunts %}
+            {% for emprunt in emprunts %}
+            <tr>
+                <td>{{ emprunt[1] }}</td>
+                <td>{{ emprunt[2] }}</td>
+                <td>{{ emprunt[3] }}</td>
+                <td>{{ emprunt[4] }}</td>
+                <td>
+                    <form method="POST">
+                        <input type="hidden" name="emprunt_id" value="{{ emprunt[0] }}">
+                        <button type="submit" name="retourner">Retourner</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        {% else %}
         <tr>
-            <td>{{ emprunt[1] }}</td>
-            <td>{{ emprunt[2] }}</td>
-            <td>{{ emprunt[3] }}</td>
-            <td>{{ emprunt[4] }}</td>
-            <td>
-                <form method="POST">
-                    <input type="hidden" name="emprunt_id" value="{{ emprunt[0] }}">
-                    <button type="submit" name="retourner">Retourner</button>
-                </form>
-            </td>
+            <td colspan="5">Aucun emprunt en cours.</td>
         </tr>
-        {% endfor %}
+        {% endif %}
     </table>
 </body>
 </html>
