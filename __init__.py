@@ -170,9 +170,11 @@ def gerer_livres():
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
 
-    # Recherche de livres
-    recherche = request.form.get('recherche')  # Obtenir la recherche
-    if recherche:  # Si une recherche est effectuée
+    # Gérer la recherche
+    recherche = request.form.get('recherche')  # Récupérer la recherche
+    if request.method == 'POST' and 'reset' in request.form:
+        recherche = None  # Réinitialiser la recherche
+    elif recherche:  # Si une recherche est effectuée
         cursor.execute("""
             SELECT * FROM Livres
             WHERE Titre LIKE ? OR Auteur LIKE ? OR CAST(Annee_publication AS TEXT) LIKE ?
@@ -192,8 +194,8 @@ def gerer_livres():
 
     conn.close()
 
-    # Transmettre uniquement les livres trouvés et les emprunts de l'utilisateur
     return render_template('user_home.html', livres=livres, emprunts=emprunts)
+
 
 
 if __name__ == "__main__":
