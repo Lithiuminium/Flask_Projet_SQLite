@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin - Gestion des Livres</title>
+</head>
+<body>
+    <h1>Bienvenue, Administrateur</h1>
+    <h2>Gestion des livres</h2>
+
+    <!-- Formulaire pour ajouter un livre -->
+    <form method="post">
+        <input type="text" name="titre" placeholder="Titre" required>
+        <input type="text" name="auteur" placeholder="Auteur" required>
+        <input type="number" name="annee" placeholder="Année de publication">
+        <input type="number" name="quantite" placeholder="Quantité" required>
+        <button type="submit" name="ajouter_livre">Ajouter un livre</button>
+    </form>
+
+    <!-- Liste des livres -->
+    <h3>Livres disponibles</h3>
+    <ul>
+        {% for livre in livres %}
+            <li>
+                {{ livre[1] }} - {{ livre[2] }} ({{ livre[3] }}) - Stock : {{ livre[4] }}
+                <form method="post" style="display:inline;">
+                    <input type="hidden" name="livre_id" value="{{ livre[0] }}">
+                    <button type="submit" name="supprimer_livre">Supprimer</button>
+                </form>
+                <form method="post" style="display:inline;">
+                    <input type="hidden" name="livre_id" value="{{ livre[0] }}">
+                    <input type="number" name="quantite" placeholder="Quantité à ajouter" required>
+                    <button type="submit" name="ajouter_stock">Ajouter au stock</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('logout') }}">Se déconnecter</a>
+</body>
+</html>
