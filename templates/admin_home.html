@@ -1,39 +1,111 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Gestion des Livres</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    <h1>Bienvenue, Administrateur</h1>
-    <h2>Gestion des livres</h2>
+<body class="bg-light">
 
-    <!-- Formulaire pour ajouter un livre -->
-    <form method="post">
-        <input type="text" name="titre" placeholder="Titre" required>
-        <input type="text" name="auteur" placeholder="Auteur" required>
-        <input type="number" name="annee" placeholder="Année de publication">
-        <input type="number" name="quantite" placeholder="Quantité" required>
-        <button type="submit" name="ajouter_livre">Ajouter un livre</button>
-    </form>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Bibliothèque - Admin</a>
+            <div class="d-flex">
+                <span class="navbar-text text-white me-3">
+                    Bienvenue, Administrateur
+                </span>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">Se déconnecter</a>
+            </div>
+        </div>
+    </nav>
 
-    <!-- Liste des livres -->
-    <h3>Livres disponibles</h3>
-    <ul>
-        {% for livre in livres %}
-            <li>
-                {{ livre[1] }} - {{ livre[2] }} ({{ livre[3] }}) - Stock : {{ livre[4] }}
-                <form method="post" style="display:inline;">
-                    <input type="hidden" name="livre_id" value="{{ livre[0] }}">
-                    <button type="submit" name="supprimer_livre">Supprimer</button>
+    <div class="container mt-4">
+        <!-- Titre principal -->
+        <div class="text-center mb-4">
+            <h1 class="text-primary">Gestion des Livres</h1>
+        </div>
+
+        <!-- Formulaire pour ajouter un livre -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                Ajouter un livre
+            </div>
+            <div class="card-body">
+                <form method="post" class="row g-3">
+                    <div class="col-md-3">
+                        <input type="text" name="titre" class="form-control" placeholder="Titre" required>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" name="auteur" class="form-control" placeholder="Auteur" required>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" name="annee" class="form-control" placeholder="Année de publication">
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" name="quantite" class="form-control" placeholder="Quantité" required>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" name="ajouter_livre" class="btn btn-success w-100">Ajouter</button>
+                    </div>
                 </form>
-                <form method="post" style="display:inline;">
-                    <input type="hidden" name="livre_id" value="{{ livre[0] }}">
-                    <input type="number" name="quantite" placeholder="Quantité à ajouter" required>
-                    <button type="submit" name="ajouter_stock">Ajouter au stock</button>
-                </form>
-            </li>
-        {% endfor %}
-    </ul>
-    <a href="{{ url_for('logout') }}">Se déconnecter</a>
+            </div>
+        </div>
+
+        <!-- Liste des livres -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                Livres disponibles
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Titre</th>
+                                <th>Auteur</th>
+                                <th>Année</th>
+                                <th>Quantité</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for livre in livres %}
+                                <tr>
+                                    <td>{{ livre[1] }}</td>
+                                    <td>{{ livre[2] }}</td>
+                                    <td>{{ livre[3] }}</td>
+                                    <td>{{ livre[4] }}</td>
+                                    <td>
+                                        <!-- Formulaire pour supprimer un livre -->
+                                        <form method="post" class="d-inline">
+                                            <input type="hidden" name="livre_id" value="{{ livre[0] }}">
+                                            <button type="submit" name="supprimer_livre" class="btn btn-danger btn-sm">Supprimer</button>
+                                        </form>
+                                        <!-- Formulaire pour ajouter au stock -->
+                                        <form method="post" class="d-inline">
+                                            <input type="hidden" name="livre_id" value="{{ livre[0] }}">
+                                            <input type="number" name="quantite" class="form-control form-control-sm d-inline-block w-auto" placeholder="Qté" required>
+                                            <button type="submit" name="ajouter_stock" class="btn btn-warning btn-sm">Ajouter Stock</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            {% if not livres %}
+                                <tr>
+                                    <td colspan="5" class="text-center">Aucun livre disponible pour le moment.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
