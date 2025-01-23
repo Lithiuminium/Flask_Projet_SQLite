@@ -93,7 +93,6 @@ def admin_home():
 
     return render_template('admin_home.html', livres=livres)
 
-# Route pour la page Utilisateur
 @app.route('/user_home', methods=['GET', 'POST'])
 def user_home():
     if not est_authentifie() or est_admin():
@@ -102,6 +101,7 @@ def user_home():
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
 
+    # Gestion des emprunts
     if request.method == 'POST':
         # Emprunter un livre
         if 'emprunter' in request.form:
@@ -125,11 +125,23 @@ def user_home():
                                (emprunt_id,))
                 conn.commit()
 
+    # Récupérer la liste des livres disponibles
     cursor.execute('SELECT * FROM Livres')
     livres = cursor.fetchall()
+
+    # Récupérer les emprunts en cours de l'utilisateur
+    cursor.execute('''
+        SELECT E.ID_emprunt, L.Titre, L.Auteur, E.Date_emprunt, E.Statut
+        FROM Emprunts E
+        JOIN Livres L ON E.ID_livre = L.ID_livre
+        WHERE E.ID_utilisateur = ? AND E.Statut = "Actif"
+    ''', (session['utilisateur_id'],))
+    emprunts = cursor.fetchall()
+
     conn.close()
 
-    return render_template('user_home.html', livres=livres)
+    return render_template('user_home.html', livres=livres, emprunts=emprunts)
+
 
 # Route pour afficher les emprunts (Admin uniquement)
 @app.route('/emprunts', methods=['GET'])
