@@ -4,86 +4,141 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Page Utilisateur</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    <h1>Bienvenue, {{ session['utilisateur_id'] }}</h1>
-    <form action="{{ url_for('logout') }}" method="GET">
-        <button type="submit">Déconnexion</button>
-    </form>
+<body class="bg-light">
 
-    <h2>Rechercher un livre</h2>
-    <form method="POST" action="{{ url_for('gerer_livres') }}">
-        <input type="text" name="recherche" placeholder="Titre, Auteur ou Année">
-        <button type="submit">Rechercher</button>
-        <a href="{{ url_for('gerer_livres') }}" class="reset-button" style="text-decoration: none;">
-            <button type="button">Reset</button>
-        </a>
-    </form>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Bibliothèque</a>
+            <div class="d-flex">
+                <span class="navbar-text text-white me-3">
+                    Bienvenue, {{ session['utilisateur_id'] }}
+                </span>
+                <form action="{{ url_for('logout') }}" method="GET">
+                    <button type="submit" class="btn btn-outline-light btn-sm">Déconnexion</button>
+                </form>
+            </div>
+        </div>
+    </nav>
 
-    <h2>Livres disponibles</h2>
-    <table border="1">
-        <tr>
-            <th>Titre</th>
-            <th>Auteur</th>
-            <th>Année</th>
-            <th>Quantité</th>
-            <th>Action</th>
-        </tr>
-        {% if livres %}
-            {% for livre in livres %}
-            <tr>
-                <td>{{ livre[1] }}</td>
-                <td>{{ livre[2] }}</td>
-                <td>{{ livre[3] }}</td>
-                <td>{{ livre[4] }}</td>
-                <td>
-                    {% if livre[4] > 0 %}
-                    <form method="POST">
-                        <input type="hidden" name="livre_id" value="{{ livre[0] }}">
-                        <button type="submit" name="emprunter">Emprunter</button>
-                    </form>
-                    {% else %}
-                    Indisponible
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        {% else %}
-        <tr>
-            <td colspan="5">Aucun livre trouvé pour cette recherche.</td>
-        </tr>
-        {% endif %}
-    </table>
+    <div class="container mt-4">
+        <!-- Recherche -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                Rechercher un livre
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('gerer_livres') }}" class="row g-3">
+                    <div class="col-md-8">
+                        <input type="text" name="recherche" class="form-control" placeholder="Titre, Auteur ou Année">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Rechercher</button>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{{ url_for('gerer_livres') }}" class="btn btn-secondary w-100">Reset</a>
+                    </div>
+                </form>
+            </div>
+        </div>
 
-    <h2>Mes emprunts en cours</h2>
-    <table border="1">
-        <tr>
-            <th>Titre</th>
-            <th>Auteur</th>
-            <th>Date d'emprunt</th>
-            <th>Statut</th>
-            <th>Action</th>
-        </tr>
-        {% if emprunts %}
-            {% for emprunt in emprunts %}
-            <tr>
-                <td>{{ emprunt[1] }}</td>
-                <td>{{ emprunt[2] }}</td>
-                <td>{{ emprunt[3] }}</td>
-                <td>{{ emprunt[4] }}</td>
-                <td>
-                    <form method="POST">
-                        <input type="hidden" name="emprunt_id" value="{{ emprunt[0] }}">
-                        <button type="submit" name="retourner">Retourner</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        {% else %}
-        <tr>
-            <td colspan="5">Aucun emprunt en cours.</td>
-        </tr>
-        {% endif %}
-    </table>
+        <!-- Livres disponibles -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                Livres disponibles
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Titre</th>
+                                <th>Auteur</th>
+                                <th>Année</th>
+                                <th>Quantité</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if livres %}
+                                {% for livre in livres %}
+                                <tr>
+                                    <td>{{ livre[1] }}</td>
+                                    <td>{{ livre[2] }}</td>
+                                    <td>{{ livre[3] }}</td>
+                                    <td>{{ livre[4] }}</td>
+                                    <td>
+                                        {% if livre[4] > 0 %}
+                                        <form method="POST">
+                                            <input type="hidden" name="livre_id" value="{{ livre[0] }}">
+                                            <button type="submit" name="emprunter" class="btn btn-success btn-sm">Emprunter</button>
+                                        </form>
+                                        {% else %}
+                                        <span class="text-danger">Indisponible</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center">Aucun livre trouvé pour cette recherche.</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Emprunts en cours -->
+        <div class="card">
+            <div class="card-header bg-warning">
+                Mes emprunts en cours
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Titre</th>
+                                <th>Auteur</th>
+                                <th>Date d'emprunt</th>
+                                <th>Statut</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if emprunts %}
+                                {% for emprunt in emprunts %}
+                                <tr>
+                                    <td>{{ emprunt[1] }}</td>
+                                    <td>{{ emprunt[2] }}</td>
+                                    <td>{{ emprunt[3] }}</td>
+                                    <td>{{ emprunt[4] }}</td>
+                                    <td>
+                                        <form method="POST">
+                                            <input type="hidden" name="emprunt_id" value="{{ emprunt[0] }}">
+                                            <button type="submit" name="retourner" class="btn btn-danger btn-sm">Retourner</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center">Aucun emprunt en cours.</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
