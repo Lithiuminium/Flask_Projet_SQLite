@@ -20,9 +20,20 @@ def est_admin():
 
 @app.route('/')
 def home():
-    if not est_authentifie():  # Vérifier si l'utilisateur est authentifié
-        return redirect(url_for('authentification'))  # Si non, rediriger vers la page de connexion
-    return render_template('home.html')  # Si oui, afficher la page d'accueil
+    if not est_authentifie():
+        return redirect(url_for('authentification'))  # Rediriger vers la connexion si non authentifié
+
+    role = session.get('role')  # Récupérer le rôle depuis la session
+
+    # Afficher la page spécifique en fonction du rôle
+    if role == "Admin":
+        return render_template('admin_home.html')  # Page spécifique pour Admin
+    elif role == "User":
+        return render_template('user_home.html')  # Page spécifique pour User
+
+    # En cas de rôle non défini
+    return "<h2>Erreur : Rôle utilisateur non reconnu</h2>", 403
+
 
 
 
