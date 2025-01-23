@@ -7,6 +7,15 @@
 </head>
 <body>
     <h1>Bienvenue, {{ session['utilisateur_id'] }}</h1>
+    <form action="{{ url_for('logout') }}" method="GET">
+        <button type="submit">Déconnexion</button>
+    </form>
+
+    <h2>Rechercher un livre</h2>
+    <form method="POST">
+        <input type="text" name="recherche" placeholder="Titre, Auteur ou Année">
+        <button type="submit">Rechercher</button>
+    </form>
 
     <h2>Livres disponibles</h2>
     <table border="1">
@@ -61,6 +70,5 @@
         </tr>
         {% endfor %}
     </table>
-    <a href="{{ url_for('logout') }}">Se déconnecter</a>
 </body>
 </html>
